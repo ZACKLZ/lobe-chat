@@ -7,10 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { Center, Flexbox } from 'react-layout-kit';
 
 import { useFileStore } from '@/store/file';
-import { useGlobalStore } from '@/store/global';
-import { modelProviderSelectors } from '@/store/global/selectors';
-import { useSessionStore } from '@/store/session';
-import { agentSelectors } from '@/store/session/selectors';
 
 const useStyles = createStyles(({ css, token, stylish }) => {
   return {
@@ -60,8 +56,6 @@ const useStyles = createStyles(({ css, token, stylish }) => {
   };
 });
 
-
-
 const handleDragOver = (e: DragEvent) => {
   e.preventDefault();
 };
@@ -77,16 +71,12 @@ const DragUpload = memo(() => {
 
   const uploadFile = useFileStore((s) => s.uploadFile);
 
-  const model = useSessionStore(agentSelectors.currentAgentModel);
-
-  const enabledFiles = useGlobalStore(modelProviderSelectors.isModelEnabledFiles(model));
-
   const uploadImages = async (fileList: FileList | undefined) => {
     if (!fileList || fileList.length === 0) return;
 
     const pools = Array.from(fileList).map(async (file) => {
       // skip none-file items
-      if (!file.type.startsWith('image') && !enabledFiles) return;
+      if (!file.type.startsWith('image')) return;
       await uploadFile(file);
     });
 
@@ -136,7 +126,6 @@ const DragUpload = memo(() => {
     uploadImages(files);
   };
 
-
   useEffect(() => {
     window.addEventListener('dragenter', handleDragEnter);
     window.addEventListener('dragover', handleDragOver);
@@ -151,7 +140,7 @@ const DragUpload = memo(() => {
       window.removeEventListener('drop', handleDrop);
       window.removeEventListener('paste', handlePaste);
     };
-  }, [handleDragEnter, handleDragOver, handleDragLeave, handleDrop, handlePaste]);
+  }, []);
 
   return (
     isDragging && (
@@ -164,8 +153,8 @@ const DragUpload = memo(() => {
               <Icon icon={FileText} size={{ fontSize: 64, strokeWidth: 1 }} />
             </Flexbox>
             <Flexbox align={'center'} gap={8} style={{ textAlign: 'center' }}>
-              <Flexbox className={styles.title}>{t(enabledFiles ? 'upload.dragFileTitle' : 'upload.dragTitle')}</Flexbox>
-              <Flexbox className={styles.desc}>{t(enabledFiles ? 'upload.dragFileDesc' : 'upload.dragDesc')}</Flexbox>
+              <Flexbox className={styles.title}>{t('upload.dragTitle')}</Flexbox>
+              <Flexbox className={styles.desc}>{t('upload.dragDesc')}</Flexbox>
             </Flexbox>
           </Center>
         </div>
@@ -175,4 +164,3 @@ const DragUpload = memo(() => {
 });
 
 export default DragUpload;
-

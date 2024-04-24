@@ -16,7 +16,7 @@ const Footer = memo(() => {
   return (
     <Flexbox align={'center'} horizontal justify={'space-between'} style={{ padding: 16 }}>
       <span style={{ color: theme.colorTextDescription }}>
-        © 2023 - {new Date().getFullYear()} LobeHub, LLC
+        ©{new Date().getFullYear()} LobeHub
       </span>
       <Flexbox horizontal>
         <ActionIcon

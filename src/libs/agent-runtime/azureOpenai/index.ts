@@ -11,15 +11,16 @@ import { AgentRuntimeErrorType } from '../error';
 import { ChatStreamPayload, ModelProvider } from '../types';
 import { AgentRuntimeError } from '../utils/createError';
 import { debugStream } from '../utils/debugStream';
+import { DEBUG_CHAT_COMPLETION } from '../utils/env';
 
 export class LobeAzureOpenAI implements LobeRuntimeAI {
-  client: OpenAIClient;
+  private _client: OpenAIClient;
 
   constructor(endpoint?: string, apikey?: string, apiVersion?: string) {
     if (!apikey || !endpoint)
       throw AgentRuntimeError.createError(AgentRuntimeErrorType.InvalidAzureAPIKey);
 
-    this.client = new OpenAIClient(endpoint, new AzureKeyCredential(apikey), { apiVersion });
+    this._client = new OpenAIClient(endpoint, new AzureKeyCredential(apikey), { apiVersion });
 
     this.baseURL = endpoint;
   }
@@ -33,18 +34,17 @@ export class LobeAzureOpenAI implements LobeRuntimeAI {
     // ============  2. send api   ============ //
 
     try {
-      const response = await this.client.streamChatCompletions(
+      const response = await this._client.streamChatCompletions(
         model,
         messages as ChatRequestMessage[],
         params as GetChatCompletionsOptions,
       );
 
-      // TODO: we need to refactor this part in the future
-      const stream = OpenAIStream(response as any);
+      const stream = OpenAIStream(response);
 
       const [debug, prod] = stream.tee();
 
-      if (process.env.DEBUG_AZURE_CHAT_COMPLETION === '1') {
+      if (DEBUG_CHAT_COMPLETION) {
         debugStream(debug).catch(console.error);
       }
 
@@ -52,18 +52,10 @@ export class LobeAzureOpenAI implements LobeRuntimeAI {
     } catch (e) {
       let error = e as { [key: string]: any; code: string; message: string };
 
-      if (error.code) {
-        switch (error.code) {
-          case 'DeploymentNotFound': {
-            error = { ...error, deployId: model };
-          }
+      switch (error.code) {
+        case 'DeploymentNotFound': {
+          error = { ...error, deployId: model };
         }
-      } else {
-        error = {
-          cause: error.cause,
-          message: error.message,
-          name: error.name,
-        } as any;
       }
 
       const errorType = error.code
@@ -71,7 +63,6 @@ export class LobeAzureOpenAI implements LobeRuntimeAI {
         : AgentRuntimeErrorType.AgentRuntimeError;
 
       throw AgentRuntimeError.chat({
-        endpoint: this.baseURL,
         error,
         errorType,
         provider: ModelProvider.Azure,

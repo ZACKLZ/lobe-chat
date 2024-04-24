@@ -1,6 +1,4 @@
-import { dataSync } from '@/database/client/core';
-import { GlobalServerConfig } from '@/types/serverConfig';
-import { StartDataSyncParams } from '@/types/sync';
+import { GlobalServerConfig } from '@/types/settings';
 
 import { API_ENDPOINTS } from './_url';
 
@@ -21,19 +19,6 @@ class GlobalService {
     const res = await fetch(API_ENDPOINTS.config);
 
     return res.json();
-  };
-
-  enabledSync = async (params: StartDataSyncParams) => {
-    if (typeof window === 'undefined') return false;
-
-    await dataSync.startDataSync(params);
-    return true;
-  };
-
-  disableSync = async () => {
-    await dataSync.disconnect();
-
-    return false;
   };
 }
 

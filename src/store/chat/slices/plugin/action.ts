@@ -4,8 +4,9 @@ import { Md5 } from 'ts-md5';
 import { StateCreator } from 'zustand/vanilla';
 
 import { PLUGIN_SCHEMA_API_MD5_PREFIX, PLUGIN_SCHEMA_SEPARATOR } from '@/const/plugin';
+import { CreateMessageParams } from '@/database/models/message';
 import { chatService } from '@/services/chat';
-import { CreateMessageParams, messageService } from '@/services/message';
+import { messageService } from '@/services/message';
 import { ChatStore } from '@/store/chat/store';
 import { useToolStore } from '@/store/tool';
 import { pluginSelectors } from '@/store/tool/selectors';
@@ -49,7 +50,7 @@ export const chatPlugin: StateCreator<
       topicId: get().activeTopicId, // if there is activeTopicId，then add it to topicId
     };
 
-    await messageService.createMessage(newMessage);
+    await messageService.create(newMessage);
     await get().refreshMessages();
   },
 

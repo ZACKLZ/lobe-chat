@@ -16,7 +16,7 @@ const TitleTags = memo(() => {
     agentSelectors.currentAgentPlugins(s),
   ]);
 
-  const showPlugin = useGlobalStore(modelProviderSelectors.isModelEnabledFunctionCall(model));
+  const showPlugin = useGlobalStore(modelProviderSelectors.modelEnabledFunctionCall(model));
 
   return (
     <Flexbox gap={8} horizontal>

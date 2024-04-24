@@ -7,37 +7,38 @@ import { Flexbox } from 'react-layout-kit';
 import { ModelProvider } from '@/libs/agent-runtime';
 import { GlobalLLMProviderKey } from '@/types/settings';
 
+import Checker from '../components/Checker';
 import ProviderConfig from '../components/ProviderConfig';
 import { LLMProviderConfigKey } from '../const';
 
 const providerKey: GlobalLLMProviderKey = 'bedrock';
 
 const BedrockProvider = memo(() => {
-  const { t } = useTranslation('modelProvider');
+  const { t } = useTranslation('setting');
 
   return (
     <ProviderConfig
-      apiKeyItems={[
+      configItems={[
         {
           children: (
             <Input.Password
               autoComplete={'new-password'}
-              placeholder={t(`${providerKey}.accessKeyId.placeholder`)}
+              placeholder={t('llm.Bedrock.accessKeyId.placeholder')}
             />
           ),
-          desc: t(`${providerKey}.accessKeyId.desc`),
-          label: t(`${providerKey}.accessKeyId.title`),
+          desc: t('llm.Bedrock.accessKeyId.desc'),
+          label: t('llm.Bedrock.accessKeyId.title'),
           name: [LLMProviderConfigKey, providerKey, 'accessKeyId'],
         },
         {
           children: (
             <Input.Password
               autoComplete={'new-password'}
-              placeholder={t(`${providerKey}.secretAccessKey.placeholder`)}
+              placeholder={t('llm.Bedrock.secretAccessKey.placeholder')}
             />
           ),
-          desc: t(`${providerKey}.secretAccessKey.desc`),
-          label: t(`${providerKey}.secretAccessKey.title`),
+          desc: t('llm.Bedrock.secretAccessKey.desc'),
+          label: t('llm.Bedrock.secretAccessKey.title'),
           name: [LLMProviderConfigKey, providerKey, 'secretAccessKey'],
         },
         {
@@ -51,13 +52,20 @@ const BedrockProvider = memo(() => {
               placeholder={'us-east-1'}
             />
           ),
-          desc: t(`${providerKey}.region.desc`),
-          label: t(`${providerKey}.region.title`),
+          desc: t('llm.Bedrock.region.desc'),
+          label: t('llm.Bedrock.region.title'),
           name: [LLMProviderConfigKey, providerKey, 'region'],
         },
+        {
+          children: (
+            <Checker model={'anthropic.claude-instant-v1'} provider={ModelProvider.Bedrock} />
+          ),
+          desc: t('llm.Bedrock.checker.desc'),
+          label: t('llm.checker.title'),
+          minWidth: '100%',
+        },
       ]}
-      checkModel={'anthropic.claude-instant-v1'}
-      provider={ModelProvider.Bedrock}
+      provider={providerKey}
       title={
         <Flexbox align={'center'} gap={8} horizontal>
           <Aws.Color size={32} />

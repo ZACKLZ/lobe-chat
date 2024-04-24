@@ -1,23 +1,40 @@
 import { getPreferredRegion } from '@/app/api/config';
 import { createErrorResponse } from '@/app/api/errorResponse';
-import { ChatCompletionErrorPayload } from '@/libs/agent-runtime';
+import { LOBE_CHAT_AUTH_HEADER, OAUTH_AUTHORIZED } from '@/const/auth';
+import { AgentRuntimeError, ChatCompletionErrorPayload } from '@/libs/agent-runtime';
 import { ChatErrorType } from '@/types/fetch';
 import { ChatStreamPayload } from '@/types/openai/chat';
 import { getTracePayload } from '@/utils/trace';
 
-import { createTraceOptions, initAgentRuntimeWithUserPayload } from '../agentRuntime';
-import { checkAuth } from '../auth';
+import { checkAuthMethod, getJWTPayload } from '../auth';
+import AgentRuntime from './agentRuntime';
 
 export const runtime = 'edge';
 
 export const preferredRegion = getPreferredRegion();
 
-export const POST = checkAuth(async (req: Request, { params, jwtPayload }) => {
+export const POST = async (req: Request, { params }: { params: { provider: string } }) => {
   const { provider } = params;
 
   try {
     // ============  1. init chat model   ============ //
-    const agentRuntime = await initAgentRuntimeWithUserPayload(provider, jwtPayload);
+
+    // get Authorization from header
+    const authorization = req.headers.get(LOBE_CHAT_AUTH_HEADER);
+    const oauthAuthorized = !!req.headers.get(OAUTH_AUTHORIZED);
+
+    if (!authorization) throw AgentRuntimeError.createError(ChatErrorType.Unauthorized);
+
+    // check the Auth With payload
+    const jwtPayload = await getJWTPayload(authorization);
+    checkAuthMethod(jwtPayload.accessCode, jwtPayload.apiKey, oauthAuthorized);
+
+    const body = await req.clone().json();
+    const agentRuntime = await AgentRuntime.initializeWithUserPayload(provider, jwtPayload, {
+      apiVersion: jwtPayload.azureApiVersion,
+      model: body.model,
+      useAzure: jwtPayload.useAzure,
+    });
 
     // ============  2. create chat completion   ============ //
 
@@ -25,17 +42,11 @@ export const POST = checkAuth(async (req: Request, { params, jwtPayload }) => {
 
     const tracePayload = getTracePayload(req);
 
-    // If user enable trace
-    if (tracePayload?.enabled) {
-      return await agentRuntime.chat(
-        data,
-        createTraceOptions(data, {
-          provider,
-          trace: tracePayload,
-        }),
-      );
-    }
-    return await agentRuntime.chat(data);
+    return await agentRuntime.chat(data, {
+      enableTrace: tracePayload?.enabled,
+      provider,
+      trace: tracePayload,
+    });
   } catch (e) {
     const {
       errorType = ChatErrorType.InternalServerError,
@@ -49,4 +60,4 @@ export const POST = checkAuth(async (req: Request, { params, jwtPayload }) => {
 
     return createErrorResponse(errorType, { error, ...res, provider });
   }
-});
+};

@@ -27,7 +27,7 @@ const Actions = memo<ActionsProps>(
   ({ id, openRenameModal, openConfigModal, onOpenChange, isCustomGroup, isPinned }) => {
     const { t } = useTranslation('chat');
     const { styles } = useStyles();
-    const { modal, message } = App.useApp();
+    const { modal } = App.useApp();
 
     const [createSession, removeSessionGroup] = useSessionStore((s) => [
       s.createSession,
@@ -48,15 +48,9 @@ const Actions = memo<ActionsProps>(
       icon: <Icon icon={Plus} />,
       key: 'newAgent',
       label: t('newAgent'),
-      onClick: async ({ domEvent }) => {
+      onClick: ({ domEvent }) => {
         domEvent.stopPropagation();
-        const key = 'createNewAgentInGroup';
-        message.loading({ content: t('sessionGroup.creatingAgent'), duration: 0, key });
-
-        await createSession({ group: id, pinned: isPinned });
-
-        message.destroy(key);
-        message.success({ content: t('sessionGroup.createAgentSuccess') });
+        createSession({ group: id, pinned: isPinned });
       },
     };
 
@@ -89,9 +83,9 @@ const Actions = memo<ActionsProps>(
             modal.confirm({
               centered: true,
               okButtonProps: { danger: true },
-              onOk: async () => {
+              onOk: () => {
                 if (!id) return;
-                await removeSessionGroup(id);
+                removeSessionGroup(id);
               },
               rootClassName: styles.modalRoot,
               title: t('sessionGroup.confirmRemoveGroupAlert'),

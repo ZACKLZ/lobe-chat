@@ -53,7 +53,7 @@ const Actions = memo<ActionProps>(({ group, id, openCreateGroupModal, setOpen })
     },
   );
 
-  const { modal, message } = App.useApp();
+  const { modal } = App.useApp();
 
   const isDefault = group === SessionDefaultGroup.Default;
   // const hasDivider = !isDefault || Object.keys(sessionByGroup).length > 0;
@@ -150,9 +150,8 @@ const Actions = memo<ActionProps>(({ group, id, openCreateGroupModal, setOpen })
           modal.confirm({
             centered: true,
             okButtonProps: { danger: true },
-            onOk: async () => {
-              await removeSession(id);
-              message.success(t('confirmRemoveSessionSuccess'));
+            onOk: () => {
+              removeSession(id);
             },
             rootClassName: styles.modalRoot,
             title: t('confirmRemoveSessionItemAlert'),

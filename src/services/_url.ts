@@ -29,7 +29,6 @@ export const API_ENDPOINTS = mapWithBasePath({
 
   // chat
   chat: (provider: string) => withBasePath(`/api/chat/${provider}`),
-  chatModels: (provider: string) => withBasePath(`/api/chat/models/${provider}`),
 
   // trace
   trace: '/api/trace',

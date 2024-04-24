@@ -12,6 +12,8 @@ const customSessionGroups = (s: SessionStore): CustomSessionGroup[] => s.customS
 
 const allSessions = (s: SessionStore): LobeSessions => s.sessions;
 
+const searchSessions = (s: SessionStore): LobeSessions => s.searchSessions;
+
 const getSessionById =
   (id: string) =>
   (s: SessionStore): LobeAgentSession =>
@@ -57,4 +59,5 @@ export const sessionSelectors = {
   isSessionListInit,
   isSomeSessionActive,
   pinnedSessions,
+  searchSessions,
 };

@@ -1,5 +1,5 @@
 import { ActionIcon, EditableText, SortableList } from '@lobehub/ui';
-import { App } from 'antd';
+import { App, Popconfirm } from 'antd';
 import { createStyles } from 'antd-style';
 import { PencilLine, Trash } from 'lucide-react';
 import { memo, useState } from 'react';
@@ -25,7 +25,7 @@ const useStyles = createStyles(({ css }) => ({
 const GroupItem = memo<SessionGroupItem>(({ id, name }) => {
   const { t } = useTranslation('chat');
   const { styles } = useStyles();
-  const { message, modal } = App.useApp();
+  const { message } = App.useApp();
 
   const [editing, setEditing] = useState(false);
   const [updateSessionGroupName, removeSessionGroup] = useSessionStore((s) => [
@@ -40,34 +40,29 @@ const GroupItem = memo<SessionGroupItem>(({ id, name }) => {
         <>
           <span className={styles.title}>{name}</span>
           <ActionIcon icon={PencilLine} onClick={() => setEditing(true)} size={'small'} />
-          <ActionIcon
-            icon={Trash}
-            onClick={() => {
-              modal.confirm({
-                centered: true,
-                okButtonProps: {
-                  danger: true,
-                  type: 'primary',
-                },
-                onOk: async () => {
-                  await removeSessionGroup(id);
-                },
-                title: t('sessionGroup.confirmRemoveGroupAlert'),
-              });
+          <Popconfirm
+            arrow={false}
+            okButtonProps={{
+              danger: true,
+              type: 'primary',
             }}
-            size={'small'}
-          />
+            onConfirm={() => {
+              removeSessionGroup(id);
+            }}
+            title={t('sessionGroup.confirmRemoveGroupAlert')}
+          >
+            <ActionIcon icon={Trash} size={'small'} />
+          </Popconfirm>
         </>
       ) : (
         <EditableText
           editing={editing}
-          onChangeEnd={async (input) => {
+          onChangeEnd={(input) => {
             if (name !== input) {
               if (!input) return;
               if (input.length === 0 || input.length > 20)
                 return message.warning(t('sessionGroup.tooLong'));
-
-              await updateSessionGroupName(id, input);
+              updateSessionGroupName(id, input);
               message.success(t('sessionGroup.renameSuccess'));
             }
             setEditing(false);

@@ -44,13 +44,15 @@ export interface LobeAgentSettings {
 
 export type LobeSessions = LobeAgentSession[];
 
-export interface CustomSessionGroup extends SessionGroupItem {
+export interface CustomSessionGroup {
   children: LobeSessions;
+  id: SessionGroupId;
+  name: string;
 }
 
-export type LobeSessionGroups = SessionGroupItem[];
-
 export interface ChatSessionList {
-  sessionGroups: LobeSessionGroups;
-  sessions: LobeSessions;
+  all: LobeSessions;
+  customGroup: CustomSessionGroup[];
+  default: LobeSessions;
+  pinned: LobeSessions;
 }

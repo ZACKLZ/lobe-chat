@@ -1,5 +1,4 @@
 import { SearchBar } from '@lobehub/ui';
-import { useUnmount } from 'ahooks';
 import { useResponsive } from 'antd-style';
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,12 +10,11 @@ const TopicSearchBar = memo<{ onClear?: () => void }>(({ onClear }) => {
 
   const [keywords, setKeywords] = useState('');
   const { mobile } = useResponsive();
-  const [activeSessionId, useSearchTopics] = useChatStore((s) => [s.activeId, s.useSearchTopics]);
 
-  useSearchTopics(keywords, activeSessionId);
-  useUnmount(() => {
-    useChatStore.setState({ isSearchingTopic: false });
-  });
+  const useSearchTopics = useChatStore((s) => s.useSearchTopics);
+
+  useSearchTopics(keywords);
+
   return (
     <SearchBar
       autoFocus

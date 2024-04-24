@@ -21,7 +21,7 @@ export default defineConfig({
       inline: ['vitest-canvas-mock'],
     },
     // threads: false,
-    environment: 'happy-dom',
+    environment: 'jsdom',
     globals: true,
     setupFiles: './tests/setup.ts',
   },

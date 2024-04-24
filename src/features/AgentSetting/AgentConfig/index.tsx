@@ -58,7 +58,6 @@ const AgentConfig = memo(() => {
                   value: 'docs',
                 },
               ]}
-              unoptimized={false}
               value={displayMode}
               width={144}
             />

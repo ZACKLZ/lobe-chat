@@ -18,9 +18,8 @@ vi.mock('@/services/topic', () => ({
     removeAllTopic: vi.fn(),
     removeTopic: vi.fn(),
     createTopic: vi.fn(),
-    updateTopicFavorite: vi.fn(),
-    updateTopicTitle: vi.fn(),
-    updateTopic: vi.fn(),
+    updateTitle: vi.fn(),
+    updateFavorite: vi.fn(),
     batchRemoveTopics: vi.fn(),
     getTopics: vi.fn(),
     searchTopics: vi.fn(),
@@ -149,7 +148,7 @@ describe('topic action', () => {
       });
 
       // Check if mutate has been called with the active session ID
-      expect(mutate).toHaveBeenCalledWith(['SWR_USE_FETCH_TOPIC', activeId]);
+      expect(mutate).toHaveBeenCalledWith(activeId);
     });
 
     it('should handle errors during refreshing topics', async () => {
@@ -181,9 +180,7 @@ describe('topic action', () => {
       const topicId = 'topic-id';
       const favState = true;
 
-      const updateFavoriteSpy = vi
-        .spyOn(topicService, 'updateTopic')
-        .mockResolvedValue({ success: 1 });
+      const updateFavoriteSpy = vi.spyOn(topicService, 'updateFavorite').mockResolvedValue(true);
 
       const refreshTopicSpy = vi.spyOn(result.current, 'refreshTopic');
 
@@ -191,7 +188,7 @@ describe('topic action', () => {
         await result.current.favoriteTopic(topicId, favState);
       });
 
-      expect(updateFavoriteSpy).toHaveBeenCalledWith(topicId, { favorite: favState });
+      expect(updateFavoriteSpy).toHaveBeenCalledWith(topicId, favState);
       expect(refreshTopicSpy).toHaveBeenCalled();
     });
   });
@@ -236,7 +233,7 @@ describe('topic action', () => {
       const topicId = 'topic-id';
       const newTitle = 'Updated Topic Title';
       // Mock the topicService.updateTitle to resolve immediately
-      (topicService.updateTopic as Mock).mockResolvedValue(undefined);
+      (topicService.updateTitle as Mock).mockResolvedValue(undefined);
 
       const { result } = renderHook(() => useChatStore());
 
@@ -248,9 +245,7 @@ describe('topic action', () => {
       });
 
       // Verify that the topicService.updateTitle was called with correct parameters
-      expect(topicService.updateTopic).toHaveBeenCalledWith(topicId, {
-        title: 'Updated Topic Title',
-      });
+      expect(topicService.updateTitle).toHaveBeenCalledWith(topicId, newTitle);
 
       // Verify that the refreshTopic was called to update the state
       expect(refreshTopicSpy).toHaveBeenCalled();
@@ -314,27 +309,6 @@ describe('topic action', () => {
       const activeId = 'test-session-id';
 
       await act(async () => {
-        useChatStore.setState({ activeId, activeTopicId: topicId });
-      });
-
-      const refreshTopicSpy = vi.spyOn(result.current, 'refreshTopic');
-      const switchTopicSpy = vi.spyOn(result.current, 'switchTopic');
-
-      await act(async () => {
-        await result.current.removeTopic(topicId);
-      });
-
-      expect(messageService.removeMessages).toHaveBeenCalledWith(activeId, topicId);
-      expect(topicService.removeTopic).toHaveBeenCalledWith(topicId);
-      expect(refreshTopicSpy).toHaveBeenCalled();
-      expect(switchTopicSpy).toHaveBeenCalled();
-    });
-    it('should remove a specific topic and its messages, then not refresh the topic list', async () => {
-      const topicId = 'topic-1';
-      const { result } = renderHook(() => useChatStore());
-      const activeId = 'test-session-id';
-
-      await act(async () => {
         useChatStore.setState({ activeId });
       });
 
@@ -348,7 +322,7 @@ describe('topic action', () => {
       expect(messageService.removeMessages).toHaveBeenCalledWith(activeId, topicId);
       expect(topicService.removeTopic).toHaveBeenCalledWith(topicId);
       expect(refreshTopicSpy).toHaveBeenCalled();
-      expect(switchTopicSpy).not.toHaveBeenCalled();
+      expect(switchTopicSpy).toHaveBeenCalled();
     });
   });
   describe('removeUnstarredTopic', () => {

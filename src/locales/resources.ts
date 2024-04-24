@@ -2,7 +2,6 @@ import resources from './default';
 
 export const locales = [
   'ar',
-  'bg-BG',
   'de-DE',
   'en-US',
   'es-ES',
@@ -20,18 +19,23 @@ export const locales = [
 export type DefaultResources = typeof resources;
 export type Locales = (typeof locales)[number];
 
-export const normalizeLocale = (locale?: string): string => {
+export const normalizeLocale = (locale?: string) => {
   if (!locale) return 'en-US';
 
-  if (locale.startsWith('ar')) return 'ar';
+  switch (locale) {
+    case 'zh-CN':
+    case 'zh': {
+      return 'zh-CN';
+    }
 
-  for (const l of locales) {
-    if (l.startsWith(locale)) {
-      return l;
+    case 'en': {
+      return 'en-US';
+    }
+
+    default: {
+      return locale;
     }
   }
-
-  return 'en-US';
 };
 
 type LocaleOptions = {
@@ -103,10 +107,6 @@ export const localeOptions: LocaleOptions = [
   {
     label: 'Tiếng Việt',
     value: 'vi-VN',
-  },
-  {
-    label: 'Български',
-    value: 'bg-BG',
   },
 ] as LocaleOptions;
 

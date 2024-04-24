@@ -5,19 +5,13 @@ import { isMobileDevice } from '@/utils/responsive';
 
 import DesktopPage from './(desktop)';
 import MobilePage from './(mobile)';
-import PageTitle from './features/PageTitle';
 
 export default () => {
   const mobile = isMobileDevice();
 
   const Page = mobile ? MobilePage : DesktopPage;
 
-  return (
-    <>
-      <PageTitle />
-      <Page />
-    </>
-  );
+  return <Page />;
 };
 
 export const metadata: Metadata = {

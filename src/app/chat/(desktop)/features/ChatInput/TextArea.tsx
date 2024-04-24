@@ -31,11 +31,7 @@ const useStyles = createStyles(({ css }) => {
   };
 });
 
-interface InputAreaProps {
-  setExpand?: (expand: boolean) => void;
-}
-
-const InputArea = memo<InputAreaProps>(({ setExpand }) => {
+const InputArea = memo<{ setExpand?: (expand: boolean) => void }>(({ setExpand }) => {
   const { t } = useTranslation('chat');
   const { styles } = useStyles();
   const ref = useRef<TextAreaRef>(null);
@@ -122,7 +118,5 @@ const InputArea = memo<InputAreaProps>(({ setExpand }) => {
     </div>
   );
 });
-
-InputArea.displayName = 'InputArea';
 
 export default InputArea;

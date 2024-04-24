@@ -1,60 +1,100 @@
-import { ChatModelCard } from '@/types/llm';
+export type CustomModels = { displayName: string; id: string }[];
 
-export interface GeneralModelProviderConfig {
-  apiKey?: string;
+export interface OpenAIConfig {
+  OPENAI_API_KEY: string;
+  azureApiVersion?: string;
   /**
-   * whether to auto fetch model lists
+   * custom mode name for fine-tuning or openai like model
    */
-  autoFetchModelLists?: boolean;
-  /**
-   * user defined model cards
-   */
-  customModelCards?: ChatModelCard[];
+  customModelName?: string;
   enabled: boolean;
-  /**
-   * enabled models id
-   */
-  enabledModels?: string[] | null;
   endpoint?: string;
   /**
-   * whether fetch on client
+   * @deprecated
    */
-  fetchOnClient?: boolean;
-  /**
-   * the latest fetch model list time
-   */
-  latestFetchTime?: number;
-  /**
-   * fetched models from provider side
-   */
-  remoteModelCards?: ChatModelCard[];
+  models?: string[];
+  useAzure?: boolean;
 }
 
-export interface AzureOpenAIConfig extends GeneralModelProviderConfig {
+export interface AzureOpenAIConfig {
+  apiKey: string;
   apiVersion?: string;
+  deployments: string;
+  enabled: boolean;
+  endpoint?: string;
 }
 
-export interface AWSBedrockConfig extends Omit<GeneralModelProviderConfig, 'apiKey' | 'endpoint'> {
+export interface ZhiPuConfig {
+  apiKey?: string;
+  enabled: boolean;
+  endpoint?: string;
+}
+
+export interface MoonshotConfig {
+  apiKey?: string;
+  enabled: boolean;
+}
+
+export interface GoogleConfig {
+  apiKey?: string;
+  enabled: boolean;
+  endpoint?: string;
+}
+
+export interface AWSBedrockConfig {
   accessKeyId?: string;
+  enabled: boolean;
   region?: string;
   secretAccessKey?: string;
 }
 
+export interface OllamaConfig {
+  customModelName?: string;
+  enabled?: boolean;
+  endpoint?: string;
+}
+
+export interface PerplexityConfig {
+  apiKey?: string;
+  enabled: boolean;
+  endpoint?: string;
+}
+
+export interface AnthropicConfig {
+  apiKey?: string;
+  enabled: boolean;
+  endpoint?: string;
+}
+
+export interface MistralConfig {
+  apiKey?: string;
+  enabled: boolean;
+}
+
+export interface GroqConfig {
+  apiKey?: string;
+  enabled: boolean;
+}
+
+export interface OpenRouterConfig {
+  apiKey?: string;
+  customModelName?: string;
+  enabled?: boolean;
+}
+
 export interface GlobalLLMConfig {
-  anthropic: GeneralModelProviderConfig;
+  anthropic: AnthropicConfig;
   azure: AzureOpenAIConfig;
   bedrock: AWSBedrockConfig;
-  google: GeneralModelProviderConfig;
-  groq: GeneralModelProviderConfig;
-  mistral: GeneralModelProviderConfig;
-  moonshot: GeneralModelProviderConfig;
-  ollama: GeneralModelProviderConfig;
-  openai: GeneralModelProviderConfig;
-  openrouter: GeneralModelProviderConfig;
-  perplexity: GeneralModelProviderConfig;
-  togetherai: GeneralModelProviderConfig;
-  zeroone: GeneralModelProviderConfig;
-  zhipu: GeneralModelProviderConfig;
+  google: GoogleConfig;
+  groq: GroqConfig;
+  mistral: MistralConfig;
+  moonshot: MoonshotConfig;
+  ollama: OllamaConfig;
+  openAI: OpenAIConfig;
+  openrouter: OpenRouterConfig;
+  perplexity: PerplexityConfig;
+  zhipu: ZhiPuConfig;
 }
 
 export type GlobalLLMProviderKey = keyof GlobalLLMConfig;

@@ -9,11 +9,10 @@ import { StateCreator } from 'zustand/vanilla';
 import { chainSummaryTitle } from '@/chains/summaryTitle';
 import { LOADING_FLAT } from '@/const/message';
 import { TraceNameMap } from '@/const/trace';
-import { useClientDataSWR } from '@/libs/swr';
 import { chatService } from '@/services/chat';
 import { messageService } from '@/services/message';
 import { topicService } from '@/services/topic';
-import type { ChatStore } from '@/store/chat';
+import { ChatStore } from '@/store/chat';
 import { ChatMessage } from '@/types/message';
 import { ChatTopic } from '@/types/topic';
 import { setNamespace } from '@/utils/storeDebug';
@@ -22,9 +21,6 @@ import { chatSelectors } from '../message/selectors';
 import { topicSelectors } from './selectors';
 
 const n = setNamespace('topic');
-
-const SWR_USE_FETCH_TOPIC = 'SWR_USE_FETCH_TOPIC';
-const SWR_USE_SEARCH_TOPIC = 'SWR_USE_SEARCH_TOPIC';
 
 export interface ChatTopicAction {
   favoriteTopic: (id: string, favState: boolean) => Promise<void>;
@@ -43,7 +39,7 @@ export interface ChatTopicAction {
   updateTopicLoading: (id?: string) => void;
   updateTopicTitle: (id: string, title: string) => Promise<void>;
   useFetchTopics: (sessionId: string) => SWRResponse<ChatTopic[]>;
-  useSearchTopics: (keywords?: string, sessionId?: string) => SWRResponse<ChatTopic[]>;
+  useSearchTopics: (keywords?: string) => SWRResponse<ChatTopic[]>;
 }
 
 export const chatTopic: StateCreator<
@@ -78,17 +74,6 @@ export const chatTopic: StateCreator<
       messages: messages.map((m) => m.id),
     });
     await refreshTopic();
-    // TODO: 优化为乐观更新
-    // const params: CreateTopicParams = {
-    //   sessionId: activeId,
-    //   title: t('topic.defaultTitle', { ns: 'chat' }),
-    //   messages: messages.map((m) => m.id),
-    // };
-
-    // const topicId = await refreshTopic({
-    //   action: async () => topicService.createTopic(params),
-    //   optimisticData: (data) => topicReducer(data, { type: 'addTopic', value: params }),
-    // });
 
     // 2. auto summary topic Title
     // we don't need to wait for summary, just let it run async
@@ -104,7 +89,7 @@ export const chatTopic: StateCreator<
 
     const newTitle = t('duplicateTitle', { ns: 'chat', title: topic?.title });
 
-    const newTopicId = await topicService.cloneTopic(id, newTitle);
+    const newTopicId = await topicService.duplicateTopic(id, newTitle);
     await refreshTopic();
 
     switchTopic(newTopicId);
@@ -125,7 +110,7 @@ export const chatTopic: StateCreator<
         updateTopicTitleInSummary(topicId, topic.title);
       },
       onFinish: async (text) => {
-        await topicService.updateTopic(topicId, { title: text });
+        topicService.updateTitle(topicId, text);
       },
       onLoadingChange: (loading) => {
         updateTopicLoading(loading ? topicId : undefined);
@@ -139,13 +124,12 @@ export const chatTopic: StateCreator<
     });
     await refreshTopic();
   },
-  favoriteTopic: async (id, favorite) => {
-    await topicService.updateTopic(id, { favorite });
+  favoriteTopic: async (id, favState) => {
+    await topicService.updateFavorite(id, favState);
     await get().refreshTopic();
   },
-
   updateTopicTitle: async (id, title) => {
-    await topicService.updateTopic(id, { title });
+    await topicService.updateTitle(id, title);
     await get().refreshTopic();
   },
 
@@ -155,29 +139,20 @@ export const chatTopic: StateCreator<
 
     await summaryTopicTitle(id, messages);
   },
-
   // query
   useFetchTopics: (sessionId) =>
-    useClientDataSWR<ChatTopic[]>(
-      [SWR_USE_FETCH_TOPIC, sessionId],
-      async ([, sessionId]: [string, string]) => topicService.getTopics({ sessionId }),
-      {
-        onSuccess: (topics) => {
-          set({ topics, topicsInit: true }, false, n('useFetchTopics(success)', { sessionId }));
-        },
+    useSWR<ChatTopic[]>(sessionId, async (sessionId) => topicService.getTopics({ sessionId }), {
+      onSuccess: (topics) => {
+        set({ topics, topicsInit: true }, false, n('useFetchTopics(success)', { sessionId }));
       },
-    ),
-  useSearchTopics: (keywords, sessionId) =>
-    useSWR<ChatTopic[]>(
-      [SWR_USE_SEARCH_TOPIC, keywords, sessionId],
-      ([, keywords, sessionId]: [string, string, string]) =>
-        topicService.searchTopics(keywords, sessionId),
-      {
-        onSuccess: (data) => {
-          set({ searchTopics: data }, false, n('useSearchTopics(success)', { keywords }));
-        },
+      dedupingInterval: 0,
+    }),
+  useSearchTopics: (keywords) =>
+    useSWR<ChatTopic[]>(keywords, topicService.searchTopics, {
+      onSuccess: (data) => {
+        set({ searchTopics: data }, false, n('useSearchTopics(success)', { keywords }));
       },
-    ),
+    }),
   switchTopic: async (id) => {
     set({ activeTopicId: id }, false, n('toggleTopic'));
 
@@ -200,10 +175,9 @@ export const chatTopic: StateCreator<
     await refreshTopic();
   },
   removeTopic: async (id) => {
-    const { activeId, activeTopicId, switchTopic, refreshTopic } = get();
+    const { activeId, switchTopic, refreshTopic } = get();
 
     // remove messages in the topic
-    // TODO: Need to remove because server service don't need to call it
     await messageService.removeMessages(activeId, id);
 
     // remove topic
@@ -211,7 +185,7 @@ export const chatTopic: StateCreator<
     await refreshTopic();
 
     // switch bach to default topic
-    if (activeTopicId === id) switchTopic();
+    switchTopic();
   },
   removeUnstarredTopic: async () => {
     const { refreshTopic, switchTopic } = get();
@@ -239,6 +213,6 @@ export const chatTopic: StateCreator<
     set({ topicLoadingId: id }, false, n('updateTopicLoading'));
   },
   refreshTopic: async () => {
-    return mutate([SWR_USE_FETCH_TOPIC, get().activeId]);
+    await mutate(get().activeId);
   },
 });

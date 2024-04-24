@@ -25,20 +25,20 @@ interface ModelOption {
 
 const ModelSelect = memo(() => {
   const [model, updateConfig] = useStore((s) => [s.config.model, s.setAgentConfig]);
-  const enabledList = useGlobalStore(
-    modelProviderSelectors.modelProviderListForModelSelect,
-    isEqual,
-  );
-
+  const select = useGlobalStore(modelProviderSelectors.modelSelectList, isEqual);
   const { styles } = useStyles();
+
+  const enabledList = select.filter((s) => s.enabled);
 
   const options = useMemo<SelectProps['options']>(() => {
     const getChatModels = (provider: ModelProviderCard) =>
-      provider.chatModels.map((model) => ({
-        label: <ModelItemRender {...model} />,
-        provider: provider.id,
-        value: model.id,
-      }));
+      provider.chatModels
+        .filter((c) => !c.hidden)
+        .map((model) => ({
+          label: <ModelItemRender {...model} />,
+          provider: provider.id,
+          value: model.id,
+        }));
 
     if (enabledList.length === 1) {
       const provider = enabledList[0];

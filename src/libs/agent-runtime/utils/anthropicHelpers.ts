@@ -1,6 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
 
-import { OpenAIChatMessage, UserMessageContentPart } from '../types';
+import {
+  OpenAIChatMessage,
+  UserMessageContentPart,
+} from '../types';
+
 import { parseDataUri } from './uriParser';
 
 export const buildAnthropicBlock = (
@@ -24,18 +28,20 @@ export const buildAnthropicBlock = (
       };
     }
   }
-};
+}
 
 export const buildAnthropicMessage = (
   message: OpenAIChatMessage,
 ): Anthropic.Messages.MessageParam => {
   const content = message.content as string | UserMessageContentPart[];
   return {
-    content: typeof content === 'string' ? content : content.map((c) => buildAnthropicBlock(c)),
+    content:
+      typeof content === 'string' ? content : content.map((c) => buildAnthropicBlock(c)),
     role: message.role === 'function' || message.role === 'system' ? 'assistant' : message.role,
   };
 };
 
 export const buildAnthropicMessages = (
   messages: OpenAIChatMessage[],
-): Anthropic.Messages.MessageParam[] => messages.map((message) => buildAnthropicMessage(message));
+): Anthropic.Messages.MessageParam[] =>
+  messages.map((message) => buildAnthropicMessage(message));

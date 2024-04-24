@@ -1,6 +1,6 @@
-import { Theme, css } from 'antd-style';
+import { css } from 'antd-style';
 
-export default ({ prefixCls, token }: { prefixCls: string; token: Theme }) => css`
+export default ({ prefixCls }: { prefixCls: string }) => css`
   html,
   body,
   #__next,
@@ -9,14 +9,25 @@ export default ({ prefixCls, token }: { prefixCls: string; token: Theme }) => cs
     overscroll-behavior: none;
     height: 100% !important;
     max-height: 100dvh !important;
-  }
 
-  * {
-    scrollbar-color: ${token.colorFill} transparent;
-    scrollbar-width: thin;
+    ::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
   }
 
   p {
     margin-bottom: 0;
+  }
+
+  @media (max-width: 575px) {
+    * {
+      ::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+      }
+    }
   }
 `;

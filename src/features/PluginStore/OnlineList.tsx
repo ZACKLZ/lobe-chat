@@ -3,10 +3,9 @@ import { Empty } from 'antd';
 import { useResponsive } from 'antd-style';
 import isEqual from 'fast-deep-equal';
 import { ServerCrash } from 'lucide-react';
-import { memo, useMemo, useState } from 'react';
+import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Center, Flexbox } from 'react-layout-kit';
-import { Virtuoso } from 'react-virtuoso';
 
 import AddPluginButton from '@/features/PluginStore/AddPluginButton';
 import { useToolStore } from '@/store/tool';
@@ -31,18 +30,6 @@ export const OnlineList = memo(() => {
   const { isLoading, error } = useFetchPluginList();
 
   const isEmpty = pluginStoreList.length === 0;
-
-  const filteredPluginList = useMemo(
-    () =>
-      pluginStoreList.filter((item) =>
-        [item.meta?.title, item.meta?.description, item.author, ...(item.meta?.tags || [])]
-          .filter(Boolean)
-          .join('')
-          .toLowerCase()
-          .includes((keywords || '')?.toLowerCase()),
-      ),
-    [pluginStoreList, keywords],
-  );
 
   return (
     <>
@@ -73,20 +60,19 @@ export const OnlineList = memo(() => {
           )}
         </Center>
       ) : (
-        <Virtuoso
-          itemContent={(index) => {
-            const item = filteredPluginList[index];
-
-            return (
-              <Flexbox key={item.identifier} paddingBlock={12}>
-                <PluginItem {...item} />
-              </Flexbox>
-            );
-          }}
-          overscan={400}
-          style={{ height: 500 }}
-          totalCount={filteredPluginList.length}
-        />
+        <Flexbox gap={24}>
+          {pluginStoreList
+            .filter((item) =>
+              [item.meta?.title, item.meta?.description, item.author, ...(item.meta?.tags || [])]
+                .filter(Boolean)
+                .join('')
+                .toLowerCase()
+                .includes((keywords || '')?.toLowerCase()),
+            )
+            .map((item) => (
+              <PluginItem key={item.identifier} {...item} />
+            ))}
+        </Flexbox>
       )}
     </>
   );

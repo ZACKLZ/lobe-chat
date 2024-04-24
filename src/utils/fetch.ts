@@ -45,7 +45,9 @@ export interface FetchSSEOptions {
 }
 
 /**
- * Fetch data using stream method
+ * 使用流式方法获取数据
+ * @param fetchFn
+ * @param options
  */
 export const fetchSSE = async (fetchFn: () => Promise<Response>, options: FetchSSEOptions = {}) => {
   const response = await fetchFn();

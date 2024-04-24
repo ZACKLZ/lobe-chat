@@ -14,7 +14,6 @@ const mockGoogleAPIKey = 'google-api-key';
 const mockAnthropicAPIKey = 'anthropic-api-key';
 const mockMistralAPIKey = 'mistral-api-key';
 const mockOpenRouterAPIKey = 'openrouter-api-key';
-const mockTogetherAIAPIKey = 'togetherai-api-key';
 
 // mock the traditional zustand
 vi.mock('zustand/traditional');
@@ -72,15 +71,6 @@ describe('getProviderAuthPayload', () => {
 
     const payload = getProviderAuthPayload(ModelProvider.OpenRouter);
     expect(payload).toEqual({ apiKey: mockOpenRouterAPIKey });
-  });
-
-  it('should return correct payload for TogetherAI provider', () => {
-    act(() => {
-      setModelProviderConfig('togetherai', { apiKey: mockTogetherAIAPIKey });
-    });
-
-    const payload = getProviderAuthPayload(ModelProvider.TogetherAI);
-    expect(payload).toEqual({ apiKey: mockTogetherAIAPIKey });
   });
 
   it('should return correct payload for Google provider', () => {
@@ -147,24 +137,26 @@ describe('getProviderAuthPayload', () => {
   it('should return correct payload for OpenAI provider', () => {
     // 假设的 OpenAI 配置
     const mockOpenAIConfig = {
-      apiKey: 'openai-api-key',
+      OPENAI_API_KEY: 'openai-api-key',
       endpoint: 'openai-endpoint',
       useAzure: true,
       azureApiVersion: 'openai-azure-api-version',
     };
     act(() => {
-      setModelProviderConfig('openai', mockOpenAIConfig);
+      setModelProviderConfig('openAI', mockOpenAIConfig);
     });
 
     const payload = getProviderAuthPayload(ModelProvider.OpenAI);
     expect(payload).toEqual({
-      apiKey: mockOpenAIConfig.apiKey,
+      apiKey: mockOpenAIConfig.OPENAI_API_KEY,
+      azureApiVersion: mockOpenAIConfig.azureApiVersion,
       endpoint: mockOpenAIConfig.endpoint,
+      useAzure: mockOpenAIConfig.useAzure,
     });
   });
 
   it('should return an empty object or throw an error for an unknown provider', () => {
     const payload = getProviderAuthPayload('UnknownProvider');
-    expect(payload).toEqual({});
+    expect(payload).toEqual({ apiKey: '', endpoint: '' });
   });
 });

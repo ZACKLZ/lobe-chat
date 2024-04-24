@@ -56,6 +56,5 @@ export default memo<Props>(({ className, tabBarKey }) => {
     ],
     [t],
   );
-
-  return <MobileTabBar activeKey={tabBarKey} className={className} items={items} safeArea />;
+  return <MobileTabBar activeKey={tabBarKey} className={className} items={items} />;
 });

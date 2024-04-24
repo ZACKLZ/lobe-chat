@@ -1,5 +1,9 @@
+import { getServerConfig } from '@/config/server';
+
 import Page from './index';
 
 export default () => {
-  return <Page />;
+  const { ENABLE_OLLAMA } = getServerConfig();
+
+  return <Page showOllama={ENABLE_OLLAMA} />;
 };

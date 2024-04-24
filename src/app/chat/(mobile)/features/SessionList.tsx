@@ -7,7 +7,7 @@ const Sessions = memo(() => {
   return (
     <>
       <div style={{ padding: '8px 16px' }}>
-        <SessionSearchBar mobile />
+        <SessionSearchBar />
       </div>
       <SessionListContent />
     </>

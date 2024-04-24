@@ -1,23 +1,29 @@
 'use client';
 
-import { memo } from 'react';
-import { Flexbox } from 'react-layout-kit';
+import dynamic from 'next/dynamic';
+import { FC, memo } from 'react';
 
-import SafeSpacing from '@/components/SafeSpacing';
-import ClientResponsiveContent from '@/components/client/ClientResponsiveContent';
-import { HEADER_HEIGHT } from '@/const/layoutTokens';
+import SessionHydration from '@/app/chat/components/SessionHydration';
+import ResponsiveContainer from '@/components/ResponsiveContainer';
+import MobileSwitchLoading from '@/features/MobileSwitchLoading';
 
 import EditPage from '../features/EditPage';
-import Header from './Header';
+import Layout from './layout.desktop';
 
-const Desktop = memo(() => (
+const Mobile: FC = dynamic(() => import('../(mobile)'), {
+  loading: MobileSwitchLoading,
+  ssr: false,
+}) as FC;
+
+const ChatSettings = memo(() => (
   <>
-    <Header />
-    <Flexbox align={'center'} flex={1} gap={16} padding={24} style={{ overflow: 'scroll' }}>
-      <SafeSpacing height={HEADER_HEIGHT - 16} />
-      <EditPage />
-    </Flexbox>
+    <ResponsiveContainer Mobile={Mobile}>
+      <Layout>
+        <EditPage />
+      </Layout>
+    </ResponsiveContainer>
+    <SessionHydration />
   </>
 ));
 
-export default ClientResponsiveContent({ Desktop, Mobile: () => import('../(mobile)') });
+export default ChatSettings;

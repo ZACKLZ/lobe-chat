@@ -1,19 +1,15 @@
+import isEqual from 'fast-deep-equal';
 import { memo } from 'react';
 
 import { useSessionStore } from '@/store/session';
+import { sessionSelectors } from '@/store/session/selectors';
 
 import SessionList from './List';
-import SkeletonList from './SkeletonList';
 
 const SessionListContent = memo(() => {
-  const [sessionSearchKeywords, useSearchSessions] = useSessionStore((s) => [
-    s.sessionSearchKeywords,
-    s.useSearchSessions,
-  ]);
+  const searchSessions = useSessionStore(sessionSelectors.searchSessions, isEqual);
 
-  const { data, isLoading } = useSearchSessions(sessionSearchKeywords);
-
-  return isLoading ? <SkeletonList /> : <SessionList dataSource={data} showAddButton={false} />;
+  return <SessionList dataSource={searchSessions} showAddButton={false} />;
 });
 
 export default SessionListContent;

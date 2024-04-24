@@ -3,44 +3,21 @@ import { ListResponse, Ollama as OllamaBrowser, ProgressResponse } from 'ollama/
 import { createErrorResponse } from '@/app/api/errorResponse';
 import { ModelProvider } from '@/libs/agent-runtime';
 import { useGlobalStore } from '@/store/global';
-import { modelConfigSelectors } from '@/store/global/selectors';
+import { modelProviderSelectors } from '@/store/global/selectors';
 import { ChatErrorType } from '@/types/fetch';
 import { getMessageError } from '@/utils/fetch';
 
-const DEFAULT_BASE_URL = 'http://127.0.0.1:11434';
+const DEFAULT_BASE_URL = 'http://127.0.0.1:11434/v1';
 
-interface OllamaServiceParams {
-  fetch?: typeof fetch;
-}
-
-export class OllamaService {
-  private _host: string;
-  private _client: OllamaBrowser;
-  private _fetch?: typeof fetch;
-
-  constructor(params: OllamaServiceParams = {}) {
-    this._host = this.getHost();
-    this._fetch = params.fetch;
-    this._client = new OllamaBrowser({ fetch: params?.fetch, host: this._host });
-  }
-
+class OllamaService {
   getHost = (): string => {
-    const config = modelConfigSelectors.ollamaConfig(useGlobalStore.getState());
-
-    const url = new URL(config.endpoint || DEFAULT_BASE_URL);
+    const endpoint = modelProviderSelectors.ollamaProxyUrl(useGlobalStore.getState());
+    const url = new URL(endpoint || DEFAULT_BASE_URL);
     return url.host;
   };
 
   getOllamaClient = () => {
-    if (this.getHost() !== this._host) {
-      this._host = this.getHost();
-      this._client = new OllamaBrowser({ fetch: this._fetch, host: this.getHost() });
-    }
-    return this._client;
-  };
-
-  abort = () => {
-    this._client.abort();
+    return new OllamaBrowser({ host: this.getHost() });
   };
 
   pullModel = async (model: string): Promise<AsyncGenerator<ProgressResponse>> => {
@@ -51,13 +28,14 @@ export class OllamaService {
     } catch {
       response = createErrorResponse(ChatErrorType.OllamaServiceUnavailable, {
         host: this.getHost(),
-        message: 'please check whether your ollama service is available or set the CORS rules',
+        message: 'please check whether your ollama service is available',
         provider: ModelProvider.Ollama,
       });
     }
 
     if (!response.ok) {
-      throw await getMessageError(response);
+      const messageError = await getMessageError(response);
+      throw messageError;
     }
     return response.json();
   };
@@ -65,17 +43,19 @@ export class OllamaService {
   getModels = async (): Promise<ListResponse> => {
     let response: Response | ListResponse;
     try {
-      return await this.getOllamaClient().list();
+      const response = await this.getOllamaClient().list();
+      return response;
     } catch {
       response = createErrorResponse(ChatErrorType.OllamaServiceUnavailable, {
         host: this.getHost(),
-        message: 'please check whether your ollama service is available or set the CORS rules',
+        message: 'please check whether your ollama service is available',
         provider: ModelProvider.Ollama,
       });
     }
 
     if (!response.ok) {
-      throw await getMessageError(response);
+      const messageError = await getMessageError(response);
+      throw messageError;
     }
     return response.json();
   };

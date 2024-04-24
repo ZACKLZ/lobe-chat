@@ -5,11 +5,17 @@ import { Center, Flexbox } from 'react-layout-kit';
 
 import { ModelProvider } from '@/libs/agent-runtime';
 import { useChatStore } from '@/store/chat';
-import { GlobalLLMProviderKey } from '@/types/settings';
 
+import AnthropicForm from './Anthropic';
 import BedrockForm from './Bedrock';
-import ProviderApiKeyForm from './ProviderApiKeyForm';
-import ProviderAvatar from './ProviderAvatar';
+import GoogleForm from './Google';
+import GroqForm from './Groq';
+import MistralForm from './Mistral';
+import MoonshotForm from './Moonshot';
+import OpenAIForm from './OpenAI';
+import OpenRouterForm from './OpenRouter';
+import PerplexityForm from './Perplexity';
+import ZhipuForm from './Zhipu';
 
 interface APIKeyFormProps {
   id: string;
@@ -21,46 +27,54 @@ const APIKeyForm = memo<APIKeyFormProps>(({ id, provider }) => {
 
   const [resend, deleteMessage] = useChatStore((s) => [s.internalResendMessage, s.deleteMessage]);
 
-  const apiKeyPlaceholder = useMemo(() => {
-    switch (provider) {
-      case ModelProvider.Anthropic: {
-        return 'sk-ant_*****************************';
+  const action = useMemo(() => {
+    switch (provider as ModelProvider) {
+      case ModelProvider.Bedrock: {
+        return <BedrockForm />;
       }
 
-      case ModelProvider.OpenRouter: {
-        return 'sk-or-********************************';
-      }
-
-      case ModelProvider.Perplexity: {
-        return 'pplx-********************************';
+      case ModelProvider.Google: {
+        return <GoogleForm />;
       }
 
       case ModelProvider.ZhiPu: {
-        return '*********************.*************';
+        return <ZhipuForm />;
+      }
+
+      case ModelProvider.Mistral: {
+        return <MistralForm />;
+      }
+
+      case ModelProvider.Moonshot: {
+        return <MoonshotForm />;
+      }
+
+      case ModelProvider.Perplexity: {
+        return <PerplexityForm />;
+      }
+
+      case ModelProvider.Anthropic: {
+        return <AnthropicForm />;
       }
 
       case ModelProvider.Groq: {
-        return 'gsk_*****************************';
+        return <GroqForm />;
+      }
+      
+      case ModelProvider.OpenRouter: {
+        return <OpenRouterForm />;
       }
 
-      default: {
-        return '*********************************';
+      default:
+      case ModelProvider.OpenAI: {
+        return <OpenAIForm />;
       }
     }
   }, [provider]);
 
   return (
     <Center gap={16} style={{ maxWidth: 300 }}>
-      {provider === ModelProvider.Bedrock ? (
-        <BedrockForm />
-      ) : (
-        <ProviderApiKeyForm
-          apiKeyPlaceholder={apiKeyPlaceholder}
-          avatar={<ProviderAvatar provider={provider as ModelProvider} />}
-          provider={provider as GlobalLLMProviderKey}
-          showEndpoint={provider === ModelProvider.OpenAI}
-        />
-      )}
+      {action}
       <Flexbox gap={12} width={'100%'}>
         <Button
           block

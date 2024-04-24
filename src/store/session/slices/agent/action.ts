@@ -78,7 +78,7 @@ export const createAgentSlice: StateCreator<
 
     const { activeId, refreshSessions } = get();
 
-    await sessionService.updateSession(activeId, { meta });
+    await sessionService.updateSessionMeta(activeId, meta);
     await refreshSessions();
   },
 });

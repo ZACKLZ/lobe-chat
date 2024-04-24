@@ -121,11 +121,6 @@ describe('createErrorResponse', () => {
       expect(response.status).toBe(481);
     });
 
-    it('returns a 484 status for TogetherAIBizError error type', () => {
-      const errorType = AgentRuntimeErrorType.TogetherAIBizError;
-      const response = createErrorResponse(errorType);
-      expect(response.status).toBe(484);
-    });
   });
 
   // 测试状态码不在200-599范围内的情况
